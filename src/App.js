@@ -1,73 +1,129 @@
 import logo from './images/Image.png';
 import './App.css';
-import React, { useEffect,useContext } from 'react';
+import React, { useEffect, useContext, useRef } from 'react';
 import { LangContext } from './LanguageContext';
+
 function App() {
- 
-  const{language,changeLanguage,translation} = useContext(LangContext);
+  const { language, changeLanguage, translation } = useContext(LangContext);
+  const canvasRef = useRef(null);
+
   useEffect(() => {
-  const canvas = document.getElementById('matrix-canvas');
-  const ctx = canvas.getContext('2d');
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
 
-  canvas.height = window.innerHeight;
-  canvas.width = window.innerWidth;
+    const resizeCanvas = () => {
+      canvas.height = window.innerHeight;
+      canvas.width = window.innerWidth;
+    };
 
-  const letters = Array(256).join("01").split("");
-  const fontSize = 50;
-  const columns = canvas.width / fontSize;
-  const drops = Array(Math.floor(columns)).fill(1);
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
 
-  function draw() {
-    ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    const letters = "01".split("");
+    const fontSize = 15;
+    let columns = canvas.width / fontSize;
+    let drops = Array(Math.floor(columns)).fill(1);
 
-    ctx.fillStyle = "#0F0"; // لون الأكواد
-    ctx.font = fontSize + "px monospace";
+    const updateColumns = () => {
+      columns = canvas.width / fontSize;
+      drops = Array(Math.floor(columns)).fill(1);
+    };
 
-    drops.forEach((y, i) => {
-      const text = letters[Math.floor(Math.random() * letters.length)];
-      const x = i * fontSize;
-      ctx.fillText(text, x, y * fontSize);
+    function draw() {
+      ctx.fillStyle = "rgba(0, 0, 0, 0.04)";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      if (y * fontSize > canvas.height && Math.random() > 0.975) {
-        drops[i] = 0;
-      }
-      drops[i]++;
+      ctx.fillStyle = "#0F4"; // Slightly different green
+      ctx.font = fontSize + "px 'Courier New'";
+
+      drops.forEach((y, i) => {
+        const text = letters[Math.floor(Math.random() * letters.length)];
+        const x = i * fontSize;
+        
+        // Add some randomness to opacity
+        const alpha = Math.random() * 0.5 + 0.5;
+        ctx.fillStyle = `rgba(0, 255, 68, ${alpha})`;
+        
+        ctx.fillText(text, x, y * fontSize);
+
+        if (y * fontSize > canvas.height && Math.random() > 0.975) {
+          drops[i] = 0;
+        }
+        drops[i]++;
+      });
+    }
+
+    updateColumns();
+    const interval = setInterval(draw, 50);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('resize', resizeCanvas);
+    };
+  }, []);
+
+  // Add animation delay CSS variables for sidebar items
+  useEffect(() => {
+    const sidebarItems = document.querySelectorAll('.sidebar li');
+    sidebarItems.forEach((item, index) => {
+      item.style.setProperty('--i', index);
     });
-  }
+  }, []);
 
-  const interval = setInterval(draw, 33);
-  return () => clearInterval(interval);
-}, []);
-
-  
   return (
     <div className="App">
-      <canvas id="matrix-canvas"></canvas>
-      <button onClick={()=>changeLanguage(language)} style={{ position: "absolute", top: 10, right: 10,background:'grey'}}>
+      <canvas ref={canvasRef} id="matrix-canvas"></canvas>
+      
+      <button 
+        onClick={() => changeLanguage(language)} 
+        className="language-btn"
+      >
         {language === "ar" ? "English" : "العربية"}
       </button>
-      <div className='container' >
-<div className='sidebar'>
-<ul>
-<li><a href="https://www.linkedin.com/in/abdulaziz-alsaleh-b60131196
+      
+      <div className='container'>
+        <div className='sidebar'>
+          <ul>
+            <li>
+              <a 
+                href="https://www.linkedin.com/in/abdulaziz-alsaleh-b60131196" 
+                target="_blank" 
+                rel="noopener noreferrer"
+              >
+                LinkedIn
+              </a>
+            </li>
+            <li>
+              <a 
+                href="https://github.com/Aalsaleh1" 
+                target="_blank" 
+                rel="noopener noreferrer"
+              >
+                GitHub
+              </a>
+            </li>
+            <li>
+              <a 
+                href="mailto:abdulazizsalsaleh2@gmail.com"
+              >
+                Email
+              </a>
+            </li>
+          </ul>
+        </div>
 
-">LinkedIn</a></li>
-<li><a href="https://github.com/Aalsaleh1">GitHub</a></li>
-<li><a href="mailto:abdulazizsalsaleh2@gmail.com
-">Email</a></li>
-</ul>
-</div>
-
-<div className='main-content'>
-<img  src={logo}  className='App-logo'   />
-<h1>{translation.name}</h1>
-          <h2>{translation.title}</h2>
-          <p>{translation.description}</p>
-
-</div>
+        <div className='main-content'>
+          <div className='content-wrapper'>
+            <img src={logo} className='App-logo' alt="Profile" />
+            <h1>{translation.name}</h1>
+            <h2>{translation.title}</h2>
+            <p>{translation.description}</p>
+          </div>
+        </div>
       </div>
-       </div>
+    </div>
   );
 }
 
