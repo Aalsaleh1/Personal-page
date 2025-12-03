@@ -1,6 +1,6 @@
 import logo from './images/Image.png';
 import './App.css';
-import React, { useEffect, useContext, useRef } from 'react';
+import React, { useEffect, useContext, useRef } from 'react';//dep
 import { LangContext } from './LanguageContext';
 
 function App() {
